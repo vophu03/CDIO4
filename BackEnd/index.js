@@ -8,7 +8,7 @@ const port = 3000;
 const app = express();
 const AuthRouter = require('./src/Routers/Auth.js');
 dotenv.config();
-mongoose.connect(process.env.MONGODB_URL)
+mongoose.connect(process.env.MONGODB_UR_123)
     .then(() => console.log('Kết nối MongoDB thành công'))
     .catch(err => console.error('Lỗi kết nối MongoDB:', err));
 
