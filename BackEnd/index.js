@@ -1,25 +1,49 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const cookieparser = require('cookie-parser');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const port = 3000;
+require('dotenv').config();
+
 const app = express();
-const AuthRouter = require('./src/Routers/Auth.js');
-dotenv.config();
-mongoose.connect(process.env.MONGODB_UR_123)
-    .then(() => console.log('Kết nối MongoDB thành công'))
-    .catch(err => console.error('Lỗi kết nối MongoDB:', err));
 
+// Environment configuration
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+
+// Connect to MongoDB if URI is provided
+if (!MONGODB_URI) {
+  console.warn('[warn] MONGODB_URI is not set. API will run without DB connection.');
+} else {
+  mongoose
+    .connect(MONGODB_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.error('MongoDB connection error:', err));
+}
+
+// Middlewares
 app.use(morgan('combined'));
-app.use(cors());
-app.use(cookieparser());
+if (CORS_ORIGIN === '*') {
+  app.use(cors());
+} else {
+  app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
+}
+app.use(cookieParser());
 app.use(express.json());
-app.get('/', (req, res) => {
-    res.send('Hello, world!')
-})
 
-// routing 
-app.use("/api/auth", AuthRouter);
-app.listen(port, () => console.log("App Listening " + port));
+// Health check
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Root
+app.get('/', (req, res) => {
+  res.send('Hello, world!');
+});
+
+// Routers
+const AuthRouter = require('./src/Routers/Auth.js');
+app.use('/api/auth', AuthRouter);
+
+// Start server
+app.listen(PORT, () => console.log(`API listening on ${PORT}`));
+
