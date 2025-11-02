@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: BackEnd/Dockerfile
+    container_name: cdio4-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - BackEnd/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: FontEnd/Dockerfile
+      args:
+        # Change to your deployed backend URL if needed
+        VITE_API_BASE_URL: http://localhost:3000/api
+    container_name: cdio4-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
